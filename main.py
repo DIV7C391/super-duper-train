@@ -1,26 +1,25 @@
 from typing import Optional
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from dotenv import load_dotenv
-import os
+from fastapi import FastAPI, HTTPException, UploadFile, File
 import logging
 
+app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI()
-@app.post("/")
-def home():
-    try:
-
-        response=openai_call("Hello, world!")
-        return response
+@app.post("/upload/")
+async def pdf_upload(file: UploadFile = File(...)):
+    content = await file.read()
+    logging.info(f"Received file: {file.filename}, Size: {len(content)} bytes, Type: {file.content_type}")
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are allowed.")
     
-        logging.info("loaded")
+    return{
+        "filename": file.filename,
+        "size": len(content),
+        "type": file.content_type
+    }
 
-    except Exception as e:
-    
-        logging.error("REQUEST FAILED")
-        raise HTTPException(status_code=500, detail="server error")
+
+
 
 
 
