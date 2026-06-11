@@ -1,23 +1,18 @@
-from typing import Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI
 import logging
+import httpx
 
-app = FastAPI()
+app=FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-@app.post("/upload/")
-async def pdf_upload(file: UploadFile = File(...)):
-    content = await file.read()
-    logging.info(f"Received file: {file.filename}, Size: {len(content)} bytes, Type: {file.content_type}")
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are allowed.")
+@app.get("/todo")
+async def get_todo():
+    async with httpx.AsyncClient() as client:
+        response = await client.get("https://jsonplaceholder.typicode.com/todos/1")
+    return response.json()
+    return response.status_code
     
-    return{
-        "filename": file.filename,
-        "size": len(content),
-        "type": file.content_type
-    }
-
+	
 
 
 

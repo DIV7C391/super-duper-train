@@ -1,19 +1,43 @@
-# ...existing code...
-import logging
-
-logger = logging.getLogger("uvicorn.error")
+from fastapi import FastAPI, UploadFile, File
+from pypdf import PdfReader
+import tempfile
 
 app = FastAPI()
-logging.basicConfig(level=logging.INFO)
 
-@app.post("/upload/")
-async def pdf_upload(file: UploadFile = File(...)):
+@app.post("/extract")
+async def extract_text(
+    file: UploadFile = File(...)
+):
+
     content = await file.read()
-    logger.info(f"Received file: {file.filename}, Size: {len(content)} bytes, Type: {file.content_type}")
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are allowed.")
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf"
+    ) as temp_file:
+
+        temp_file.write(content)
+
+        temp_path = temp_file.name
+
+    reader = PdfReader(temp_path)
+
+    text = ""
+
+    for page in reader.pages:
+        text += page.extract_text()
+
     return {
-        "filename": file.filename,
-        "size": len(content),
-        "type": file.content_type
+        "text": text
     }
+
+try:
+
+    reader = PdfReader(temp_path)
+
+except Exception:
+
+    raise HTTPException(
+        status_code=400,
+        detail="Invalid PDF"
+    )
