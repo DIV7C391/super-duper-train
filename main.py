@@ -1,22 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Header, HTTPException
 from fastapi.responses import StreamingResponse
 import asyncio
 
+
 app = FastAPI()
 
-
-async def resp():
-    words = [
-        "RAG ","stands ","for ","Retrieval ","Augmented ","Generation"]
-    for word in words:
-
-        yield word
-
-        await asyncio.sleep(0.5)
-
-@app.get("/stream")
-async def response():
-    return StreamingResponse(
-        resp(),
-        media_type="text/plain"
-    )
+@app.get("/admin")
+async def protected(X_API_KEY: str = Header()):
+    if X_API_KEY!="secret123":
+        raise HTTPException(status_code=401, detail="invalid api key")
+    else:
+        return{
+            "message":"access granted"
+        }
