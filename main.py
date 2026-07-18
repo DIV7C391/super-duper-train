@@ -1,2 +1,5 @@
-from fastapi import FastAPI,Header, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI
+from database import engine
+from models import Base
+Base.metadata.create_all(bind=engine)
+app = FastAPI()

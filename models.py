@@ -1,18 +1,13 @@
-from sqlalchemy import Column, Integer, String
-from database import Base #base class is imported from databse.py
-from sqlalchemy import Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from database import Base
 
 
-class user(Base):
+class User(Base):
     __tablename__="users"
-    id=Column(Integer, primary_key=True)
+    id=Column(Integer,primary_key=True,index=True)
     name=Column(String)
-
-
-class Task(Base):
-    __tablename__="tasks"
+class Conversation(Base):    
+    __tablename__="Conversations"
     id=Column(Integer,primary_key=True)
-    title=Column(String)
-    completed=Column(Boolean, default=False)
-
-    user_id=Column(Integer, ForeignKey(user.id))
+    topic=Column(String)
+    user_id=Column(Integer,ForeignKey("users.id"))
