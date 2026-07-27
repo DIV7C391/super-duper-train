@@ -1,47 +1,32 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
+import httpx
+import asyncio
 
-import crud
-import schemas
-
-from database import engine, get_db, Base
-
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI()
-
-#creating user endpoint
-@app.post("/users",response_model=schemas.user_response)
-def create_user(user: schemas.user_create, db: Session = Depends(get_db)):
-    return crud.create_user(db, user)
-
-#get all users endpoint
-@app.get("/users",response_model=list[schemas.user_response])
-def get_users(db: Session = Depends(get_db)):
-    return crud.get_all(db)
-
-#get one user with the user id
-@app.get("/users/{user_id}",response_model=schemas.user_response)
-def get_user(user_id: int,db: Session = Depends(get_db)):
-    user = crud.get_one(db, user_id)
-    return user
-
-#update user endpoint
-@app.put("/users/{user_id}",response_model=schemas.user_response)
-def update_user(user_id: int,user: schemas.user_create,db: Session = Depends(get_db)):
-    updated_user = crud.update_user(db,user_id,user)
-    return updated_user
-
-#delete user endpoint
-@app.delete("/users/{user_id}")
-def delete_user(user_id: int,db: Session = Depends(get_db)):
-    deleted_user = crud.delete_user(db,user_id)
-
-    if not deleted_user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
+#async httpx get request
+async def create_post():
+    async with httpx.AsyncClient() as client:
+        a=await client.post("https://www.google.com/")
+    print(a.json())
+asyncio.run(create_post())
 
 
+#async httpx post request
+async def create_post():
+    async with httpx.AsyncClient() as client:
+        a=await client.post("https://www.google.com/",json={"name":"Divyanshu"})
+    print(a.json())
+asyncio.run(create_post())
 
+#calling multiple api endpoints concurrently
+
+async def fetch(client,url):
+    a=await client.get(url)
+    print(a.json())
+
+async def main():
+    async with httpx.AsyncClient() as client:
+        url_1="https://www.google.com/"
+        url_2="https://www.youtube.com/"
+        b=await asyncio.gather(fetch(client,url_1),fetch(client,url_2))
+    print(b)
+
+asyncio.run(main())
